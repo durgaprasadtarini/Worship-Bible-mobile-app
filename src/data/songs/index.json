@@ -1,0 +1,27 @@
+{
+  "telugu-hymns": {
+    "totalCount": 10,
+    "byLetter": {
+      "ప": 2,
+      "య": 1,
+      "ద": 1,
+      "ర": 1,
+      "క": 1,
+      "భ": 1,
+      "అ": 1,
+      "స": 2
+    }
+  },
+  "worship-songs": {
+    "totalCount": 0,
+    "byLetter": {}
+  },
+  "prayer-songs": {
+    "totalCount": 0,
+    "byLetter": {}
+  },
+  "kids-songs": {
+    "totalCount": 0,
+    "byLetter": {}
+  }
+}

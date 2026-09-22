@@ -1,17 +1,20 @@
 {
   "expo": {
-    "name": "Worship",
+    "name": "క్రైస్తవ కీర్తనలు",
     "slug": "Worship",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "scheme": "faithpathworship",
     "userInterfaceStyle": "light",
+    "backgroundColor": "#F7F5EF",
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.faithpath.worship",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#1C2B4A",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -19,6 +22,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "410687a8-1c57-416e-81ee-a6f40e832ad1"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

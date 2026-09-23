@@ -45,9 +45,9 @@ export function AuthProvider({ children }) {
     return raw ? JSON.parse(raw) : {};
   };
 
-  // Creates a new account, or resets the password on an existing one with
-  // the same email — this doubles as our "forgot password" flow since there
-  // is no backend to send reset emails from.
+  // Creates a new account, or overwrites an existing one with the same
+  // email (rare in practice now that there's a dedicated resetPassword
+  // below for the Forgot Password flow).
   const signUp = async ({ username, email, password }) => {
     const key = normalizeEmail(email);
     const users = await getUsers();
@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
     const users = await getUsers();
     const existing = users[key];
     if (!existing || existing.password !== password) {
-      return { success: false, message: 'Incorrect email or password. Please sign up again if you forgot your details.' };
+      return { success: false, message: 'Incorrect email or password. Use "Forgot Password?" if you need to reset it.' };
     }
     await AsyncStorage.setItem(SESSION_KEY, key);
     setUser({ username: existing.username, email: existing.email });
@@ -73,8 +73,37 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Forgot-password flow: confirm the email is a real account before
+  // letting the Forgot Password screen reveal the new-password fields.
+  const checkEmailExists = async (email) => {
+    const key = normalizeEmail(email);
+    const users = await getUsers();
+    return !!users[key];
+  };
+
+  const resetPassword = async (email, newPassword) => {
+    const key = normalizeEmail(email);
+    const users = await getUsers();
+    const existing = users[key];
+    if (!existing) {
+      return { success: false, message: 'No account found with that email.' };
+    }
+    users[key] = { ...existing, password: newPassword };
+    await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+    return { success: true };
+  };
+
   const value = useMemo(
-    () => ({ user, isLoading, isAuthenticated: !!user, signUp, signIn, signOut }),
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: !!user,
+      signUp,
+      signIn,
+      signOut,
+      checkEmailExists,
+      resetPassword,
+    }),
     [user, isLoading]
   );
 

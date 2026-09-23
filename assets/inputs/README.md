@@ -1,17 +1,23 @@
 # Song input folders
 
 Each folder here feeds one of the 4 left-hand cards on the Home screen.
-Drop `.docx` files (Word documents) with song lyrics into the matching
-folder, then run:
+Drop `.docx` files (Word documents) **or plain `.txt` files** with song
+lyrics into the matching folder, then run:
 
 ```bash
 npm run generate:songs
 ```
 
-(also runs automatically after `npm install`). This converts every `.docx`
-in these folders into the data the app actually reads
+(also runs automatically after `npm install`). This converts every
+`.docx`/`.txt` file in these folders into the data the app actually reads
 (`src/data/songs/<folder-name>.json`) — restart the app afterwards to see
 the new songs.
+
+> A scanned PDF (a photo of a printed page) can't be converted this way —
+> there's no real text in it to read, only images of pages. If that's all
+> you have for a batch of songs, either retype them into a `.docx`/`.txt`
+> following the format below, or run them through OCR software yourself
+> first and clean up the result before dropping it in here.
 
 | Folder            | Shows up as (Home screen card, as of now — see `src/data/homeCards.js` if it's been renamed) |
 | ------------------ | ----------------------------------- |

@@ -131,13 +131,15 @@ function processCategory(categoryKey) {
   if (fs.existsSync(dir)) {
     const files = fs
       .readdirSync(dir)
-      .filter((f) => f.toLowerCase().endsWith('.docx'))
+      .filter((f) => f.toLowerCase().endsWith('.docx') || f.toLowerCase().endsWith('.txt'))
       .sort();
 
     files.forEach((file, fileIndex) => {
       const fullPath = path.join(dir, file);
       try {
-        const text = docxToPlainText(fullPath);
+        const text = file.toLowerCase().endsWith('.txt')
+          ? fs.readFileSync(fullPath, 'utf8')
+          : docxToPlainText(fullPath);
         const fileTag = `${categoryKey}-f${fileIndex}`;
         const parsed = parseSongsFromText(text, fileTag);
         songs = songs.concat(parsed);

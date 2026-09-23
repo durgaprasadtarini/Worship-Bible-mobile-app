@@ -79,13 +79,13 @@ export default function SignInScreen({ navigation }) {
               secureTextEntry
             />
 
+            <Pressable onPress={() => navigation.navigate('ForgotPassword')} style={styles.forgotLink}>
+              <Text style={[styles.forgotLinkText, { color: colors.accent }]}>Forgot Password?</Text>
+            </Pressable>
+
             {formError ? <Text style={[styles.formError, { color: colors.danger }]}>{formError}</Text> : null}
 
             <PrimaryButton title="Sign In" onPress={handleSignIn} loading={loading} style={{ marginTop: 4 }} />
-
-            <Text style={[styles.hint, { color: colors.textSecondary }]}>
-              Forgot your details? Just sign up again with the same email to reset them.
-            </Text>
           </View>
 
           <View style={styles.footerRow}>
@@ -145,11 +145,14 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     textAlign: 'center',
   },
-  hint: {
-    marginTop: 16,
-    fontSize: 12.5,
-    textAlign: 'center',
-    lineHeight: 18,
+  forgotLink: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+    marginBottom: 18,
+  },
+  forgotLinkText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   footerRow: {
     flexDirection: 'row',

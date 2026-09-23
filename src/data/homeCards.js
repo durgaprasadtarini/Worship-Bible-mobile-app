@@ -11,7 +11,7 @@
 export const leftCards = [
   {
     id: 'telugu-hymns',
-    title: 'తెలుగు క్రిస్తవ కీర్తనలు',
+    title: 'తెలుగు క్రిస్తవ కీర్తనలు.',
     subtitle: 'Telugu Hymns',
     icon: 'musical-notes-outline',
     action: 'alphabet',

@@ -19,9 +19,10 @@ import Blobs from '../components/Blobs';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Two steps on one screen: verify the email is a real local account, then
-// reveal the new-password fields. There's no backend to send a reset link
-// from, so "verification" just means checking AsyncStorage for that email.
+// Two steps on one screen: confirm the email is a real Supabase account
+// (public.check_email_exists), then set a new password outright via the
+// reset-password Edge Function. No emailed code — see AuthContext.js for
+// why that's a deliberate (and risky) simplification.
 export default function ForgotPasswordScreen({ navigation }) {
   const { colors } = useTheme();
   const { checkEmailExists, resetPassword } = useAuth();

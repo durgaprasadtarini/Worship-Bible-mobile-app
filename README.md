@@ -4,13 +4,22 @@ A React Native + Expo app for viewing worship songs, a Telugu Bible reader,
 and personal notes/announcements — built for Christian users to browse
 during worship and personal devotion.
 
-**No backend yet.** Accounts, session, notes, and your theme preference are
-all stored locally on the device using `AsyncStorage`. That means:
-- Data does **not** sync between devices.
-- Uninstalling the app (or clearing app storage) deletes everything.
-- Passwords are stored in plain text on-device — fine for local testing,
-  **not** acceptable once this ships to real users. Add a real backend with
-  hashed passwords before then.
+**Accounts now run on Supabase** (see `SUPABASE.md` for the schema/setup) —
+sign up, sign in, and forgot-password all talk to a real backend, so an
+account works across devices/reinstalls. **Notes and your theme preference
+are still local-only**, stored on-device via `AsyncStorage` (deliberately —
+see the conversation history / project notes for why: Supabase's free tier
+row quota is being reserved for accounts, not per-user note text). That
+means notes and the light/dark preference still don't sync and are lost on
+uninstall, but your account and password aren't.
+
+Requires a `.env` file in the project root (gitignored) with:
+```
+EXPO_PUBLIC_SUPABASE_URL=<your project url>
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<your anon/publishable key>
+```
+Get both from Supabase dashboard → Project Settings → API. Never put the
+`service_role`/secret key here or anywhere in this app.
 
 ---
 
@@ -26,9 +35,11 @@ assets/inputs/              # <- drop song .docx files here (see section 6a)
 scripts/
   generate-songs.js         # converts assets/inputs/*.docx -> src/data/songs/*.json
 src/
+  lib/
+    supabaseClient.js       # Supabase client (URL/key from .env)
   context/
-    ThemeContext.js        # light/dark theme state, persisted
-    AuthContext.js         # sign up / sign in / sign out, persisted
+    ThemeContext.js        # light/dark theme state, persisted locally
+    AuthContext.js         # sign up / sign in / sign out / forgot-password, via Supabase
   theme/colors.js          # all colors — edit here to re-theme the app
   data/
     homeCards.js           # the 8 home-screen cards (titles, icons, action)
@@ -157,6 +168,15 @@ To also get an iOS build you'll need a paid Apple Developer account —
 skip this until you're ready to publish to the App Store; Android `.apk`
 testing works today without one.
 
+> **Supabase env vars in `.apk`/EAS builds**: `eas build` runs on Expo's
+> servers against a fresh copy of the repo — it never sees your local
+> `.env`. `eas.json` therefore has the Supabase URL/anon key set directly
+> under each profile's own `"env"` block, so cloud builds have them too.
+> That's safe only because it's the anon/publishable key (meant to be
+> public); if this project ever adds a real secret to `.env`, it must use
+> [EAS's own encrypted environment variables](https://docs.expo.dev/eas/environment-variables/)
+> instead of putting it in `eas.json`.
+
 ## 6. Customizing content
 
 - **Colors / theme**: `src/theme/colors.js` (`lightColors`, `darkColors`).
@@ -202,9 +222,16 @@ per-song artwork/videos.
 
 ## 7. Known limitations (basic version)
 
-- No backend — everything is local to the device (see warning at the top).
-- "Forgot password" isn't a separate flow — signing up again with the same
-  email resets that account's password (mentioned on the Sign In screen).
+- Accounts run on Supabase (see above / `SUPABASE.md`); notes and theme
+  preference are still device-local only (see warning at the top).
+- Forgot Password checks the email exists, then lets it set a new password
+  **with no further verification** (no emailed code, nothing) — a
+  deliberate tradeoff to match the app's original local-storage UX. See the
+  "Forgot Password: security tradeoff" section in `SUPABASE.md` before
+  relying on this with real users' accounts. It also depends on the
+  `reset-password` Edge Function being deployed (`SUPABASE.md` has the
+  one-time deploy steps) — until that's done, the "Reset Password" step
+  will fail even though "Verify Email" works.
 - Only the "తెలుగు క్రిస్తవ కీర్తనలు" card (`telugu-hymns`) has real songs
   right now (10, from the sample `.docx`); the other 3 left cards show "no
   songs yet" until `.docx` files are added to their folders (see 6a).

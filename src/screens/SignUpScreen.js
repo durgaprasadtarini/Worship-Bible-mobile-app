@@ -49,8 +49,13 @@ export default function SignUpScreen({ navigation }) {
       return;
     }
     setLoading(true);
-    await signUp({ username: username.trim(), email: email.trim(), password });
+    const result = await signUp({ username: username.trim(), email: email.trim(), password });
     setLoading(false);
+    if (!result.success) {
+      setErrors({ email: result.message });
+      captchaRef.current?.refresh();
+      return;
+    }
     Alert.alert('Account created', 'Please sign in with your new details.', [
       { text: 'OK', onPress: () => navigation.replace('SignIn') },
     ]);

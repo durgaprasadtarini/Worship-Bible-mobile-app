@@ -1,95 +1,193 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
-// There is no backend yet. All accounts and session state live only on this
-// device, in AsyncStorage. This is fine for local testing but is NOT secure
-// storage (passwords are kept in plain text) — replace with a real backend
-// + hashed passwords before shipping to real users. See README.md.
-const USERS_KEY = '@worship_users';
-const SESSION_KEY = '@worship_session';
-
+// Backed by Supabase Auth + a `public.profiles` table (see SUPABASE.md).
+// Session persistence, token refresh, etc. are all handled by the
+// supabase-js client itself (see src/lib/supabaseClient.js) — this context
+// just exposes the app-shaped actions (signUp/signIn/...) and keeps
+// `user` in sync with whatever Supabase reports.
 const AuthContext = createContext(null);
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
 
+function mapAuthError(error) {
+  if (!error) return 'Something went wrong. Please try again.';
+  const msg = error.message || '';
+  if (/already registered|already exists/i.test(msg)) {
+    return 'An account with this email already exists. Try signing in instead.';
+  }
+  if (/invalid login credentials/i.test(msg)) {
+    return 'Incorrect email or password. Use "Forgot Password?" if you need to reset it.';
+  }
+  return msg || 'Something went wrong. Please try again.';
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const [sessionEmail, usersRaw] = await Promise.all([
-          AsyncStorage.getItem(SESSION_KEY),
-          AsyncStorage.getItem(USERS_KEY),
-        ]);
-        if (sessionEmail) {
-          const users = usersRaw ? JSON.parse(usersRaw) : {};
-          const existing = users[sessionEmail];
-          if (existing) {
-            setUser({ username: existing.username, email: existing.email });
-          }
-        }
-      } catch (e) {
-        // If storage is corrupted for any reason, fail safe to logged-out.
-      } finally {
-        setIsLoading(false);
+    mountedRef.current = true;
+
+    const loadProfile = async (sessionUser) => {
+      if (!sessionUser) {
+        if (mountedRef.current) setUser(null);
+        return;
       }
-    })();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, role')
+        .eq('id', sessionUser.id)
+        .single();
+      if (!mountedRef.current) return;
+      setUser({
+        id: sessionUser.id,
+        email: sessionUser.email,
+        username: profile?.username || sessionUser.email.split('@')[0],
+        role: profile?.role || 'normal',
+      });
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      loadProfile(session?.user ?? null).finally(() => {
+        if (mountedRef.current) setIsLoading(false);
+      });
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      loadProfile(session?.user ?? null);
+    });
+
+    return () => {
+      mountedRef.current = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  const getUsers = async () => {
-    const raw = await AsyncStorage.getItem(USERS_KEY);
-    return raw ? JSON.parse(raw) : {};
-  };
+  const signUp = async ({ username, email, password, adminCode }) => {
+    // Signup is gated behind a code an admin generates and shares out of
+    // band (see GenerateOtpScreen) — validated server-side via a SECURITY
+    // DEFINER function since the app itself can't read any admin's row.
+    const { data: codeValid, error: codeError } = await supabase.rpc('verify_admin_otp', {
+      p_otp: String(adminCode || '').trim(),
+    });
+    if (codeError || !codeValid) {
+      return { success: false, message: 'That admin code is invalid or has expired. Ask an admin for a new one.' };
+    }
 
-  // Creates a new account, or overwrites an existing one with the same
-  // email (rare in practice now that there's a dedicated resetPassword
-  // below for the Forgot Password flow).
-  const signUp = async ({ username, email, password }) => {
-    const key = normalizeEmail(email);
-    const users = await getUsers();
-    users[key] = { username: username.trim(), email: key, password };
-    await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+    const { data, error } = await supabase.auth.signUp({
+      email: normalizeEmail(email),
+      password,
+    });
+    if (error) return { success: false, message: mapAuthError(error) };
+    if (!data.session) {
+      return {
+        success: false,
+        message:
+          'Account created, but a confirmation email is required before it can be used. Ask the app owner to turn off "Confirm email" in Supabase, then try signing in.',
+      };
+    }
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({ id: data.user.id, username: username.trim() });
+    if (profileError) {
+      return { success: false, message: `Account created, but saving your profile failed: ${profileError.message}` };
+    }
+
+    // Don't leave the user signed in here — SignUpScreen sends them back to
+    // Sign In on success, matching the rest of this app's flow.
+    await supabase.auth.signOut();
     return { success: true };
   };
 
   const signIn = async (email, password) => {
-    const key = normalizeEmail(email);
-    const users = await getUsers();
-    const existing = users[key];
-    if (!existing || existing.password !== password) {
-      return { success: false, message: 'Incorrect email or password. Use "Forgot Password?" if you need to reset it.' };
-    }
-    await AsyncStorage.setItem(SESSION_KEY, key);
-    setUser({ username: existing.username, email: existing.email });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: normalizeEmail(email),
+      password,
+    });
+    if (error) return { success: false, message: mapAuthError(error) };
+    // `user` gets populated by the onAuthStateChange listener above.
     return { success: true };
   };
 
   const signOut = async () => {
-    await AsyncStorage.removeItem(SESSION_KEY);
-    setUser(null);
+    await supabase.auth.signOut();
   };
 
-  // Forgot-password flow: confirm the email is a real account before
-  // letting the Forgot Password screen reveal the new-password fields.
+  // Forgot-password, step 1: does an account exist for this email? Backed
+  // by a SECURITY DEFINER SQL function (public.check_email_exists — see
+  // SUPABASE.md) since auth.users isn't queryable directly from the app.
+  //
+  // NOTE — deliberate security tradeoff, by explicit request: this flow
+  // has no proof-of-ownership step (no emailed code, nothing). Once an
+  // email is confirmed to exist, the app lets it set a new password
+  // outright. That means anyone who knows/guesses a user's email can take
+  // over their account. Fine for a private/testing app; revisit before
+  // real users' accounts are at stake.
   const checkEmailExists = async (email) => {
-    const key = normalizeEmail(email);
-    const users = await getUsers();
-    return !!users[key];
+    const { data, error } = await supabase.rpc('check_email_exists', { p_email: normalizeEmail(email) });
+    if (error) return false;
+    return !!data;
   };
 
+  // Forgot-password, step 2: the actual password change is privileged (it
+  // has to look up an arbitrary user by email and overwrite their password
+  // without them being signed in) so it runs server-side in the
+  // `reset-password` Edge Function, which is the only place holding the
+  // service_role key — never in this app. See supabase/functions/reset-password.
   const resetPassword = async (email, newPassword) => {
-    const key = normalizeEmail(email);
-    const users = await getUsers();
-    const existing = users[key];
-    if (!existing) {
-      return { success: false, message: 'No account found with that email.' };
-    }
-    users[key] = { ...existing, password: newPassword };
-    await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+    const { data, error } = await supabase.functions.invoke('reset-password', {
+      body: { email: normalizeEmail(email), newPassword },
+    });
+    if (error) return { success: false, message: error.message };
+    if (!data?.success) return { success: false, message: data?.message || 'Could not reset password.' };
+    return { success: true };
+  };
+
+  // --- Admin-only features (see SUPABASE.md) ---------------------------
+  // Every one of these is backed by a SECURITY DEFINER SQL function that
+  // re-checks the caller is actually an admin itself — the app never
+  // relies on a broad "admins can read/write anything" RLS policy.
+
+  const fetchAllUsers = async () => {
+    const { data, error } = await supabase.rpc('list_all_profiles');
+    if (error) return { success: false, message: error.message, users: [] };
+    return { success: true, users: data || [] };
+  };
+
+  const changeUserRole = async (userId, newRole) => {
+    const { error } = await supabase.rpc('set_user_role', { p_user_id: userId, p_new_role: newRole });
+    if (error) return { success: false, message: error.message };
+    return { success: true };
+  };
+
+  // Reads the signed-in admin's own otp/otp_generated_at — same across all
+  // admins by design, and allowed under the normal "view own profile" RLS
+  // policy, so this is a plain select, not an RPC.
+  const fetchOtpState = async () => {
+    if (!user) return { success: false, message: 'Not signed in.' };
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('otp, otp_generated_at')
+      .eq('id', user.id)
+      .single();
+    if (error) return { success: false, message: error.message };
+    return { success: true, otp: data.otp, generatedAt: data.otp_generated_at };
+  };
+
+  const generateAdminOtp = async () => {
+    const { data, error } = await supabase.rpc('generate_admin_otp');
+    if (error) return { success: false, message: error.message };
+    return { success: true, otp: data };
+  };
+
+  const killAdminOtp = async () => {
+    const { error } = await supabase.rpc('kill_admin_otp');
+    if (error) return { success: false, message: error.message };
     return { success: true };
   };
 
@@ -103,6 +201,11 @@ export function AuthProvider({ children }) {
       signOut,
       checkEmailExists,
       resetPassword,
+      fetchAllUsers,
+      changeUserRole,
+      fetchOtpState,
+      generateAdminOtp,
+      killAdminOtp,
     }),
     [user, isLoading]
   );

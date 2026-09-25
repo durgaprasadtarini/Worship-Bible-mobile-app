@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeStack from './HomeStack';
 import ContactUsScreen from '../screens/ContactUsScreen';
-import MeScreen from '../screens/MeScreen';
+import MeStack from './MeStack';
 import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
@@ -41,7 +41,7 @@ export default function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="ContactUs" component={ContactUsScreen} />
-      <Tab.Screen name="Me" component={MeScreen} />
+      <Tab.Screen name="Me" component={MeStack} />
     </Tab.Navigator>
   );
 }

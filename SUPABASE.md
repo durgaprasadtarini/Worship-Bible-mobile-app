@@ -68,8 +68,11 @@ with check (auth.uid() = id);
 - `role`: `'normal'` (default) or `'admin'`. New signups are always
   `'normal'`; promote someone by hand for now:
   `update public.profiles set role = 'admin' where id = '<uuid>';`
-- `otp`: reserved for a future admin-invite-code signup gate — currently
-  always `null` for everyone, nothing reads or writes it yet.
+- `otp`: the admin signup-invite code (see "Admin features" below). Add the
+  companion timestamp column if you haven't yet:
+  ```sql
+  alter table public.profiles add column if not exists otp_generated_at timestamptz;
+  ```
 
 ### Auth settings
 
@@ -162,16 +165,202 @@ supabase functions deploy reset-password --no-verify-jwt
 `--no-verify-jwt` is required — whoever calls this is mid "forgot
 password" and isn't signed in yet, so there's no user JWT to verify.
 
+## Admin features: user management + signup invite codes
+
+Every signup now requires an "admin code" instead of the old visual
+captcha — an admin generates a 6-digit code (`GenerateOtpScreen`) and
+shares it out of band (verbally, WhatsApp, however); a new user types it
+into `SignUpScreen` alongside their username/email/password.
+
+All of this is one more `is_admin()` privileged-function away from the
+Forgot Password pattern above — the app never gets a broad
+"admins can read/write anything" RLS policy; instead every cross-user
+action is its own SECURITY DEFINER function that re-checks the caller is
+actually an admin.
+
+```sql
+-- Caller-is-admin check, reused by every function below.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+-- Users screen: list everyone, alphabetically.
+create or replace function public.list_all_profiles()
+returns table (id uuid, username text, role text, created_at timestamptz)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can list users.';
+  end if;
+  return query
+    select p.id, p.username, p.role, p.created_at
+    from public.profiles p
+    order by p.username asc;
+end;
+$$;
+
+grant execute on function public.list_all_profiles() to authenticated;
+
+-- Users screen: change someone's account type.
+create or replace function public.set_user_role(p_user_id uuid, p_new_role text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can change user roles.';
+  end if;
+  if p_new_role not in ('normal', 'admin') then
+    raise exception 'Invalid role.';
+  end if;
+  update public.profiles set role = p_new_role, updated_at = now() where id = p_user_id;
+end;
+$$;
+
+grant execute on function public.set_user_role(uuid, text) to authenticated;
+
+-- Generate Signup Code screen: makes one code, pushed to every admin row
+-- at once (so "any admin generates it, all admins see the same code").
+create or replace function public.generate_admin_otp()
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_code text;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can generate signup codes.';
+  end if;
+  v_code := lpad(floor(random() * 1000000)::text, 6, '0');
+  update public.profiles
+  set otp = v_code, otp_generated_at = now()
+  where role = 'admin';
+  return v_code;
+end;
+$$;
+
+grant execute on function public.generate_admin_otp() to authenticated;
+
+-- "Kill Code" button — clears it early for every admin.
+create or replace function public.kill_admin_otp()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can clear signup codes.';
+  end if;
+  update public.profiles set otp = null, otp_generated_at = null where role = 'admin';
+end;
+$$;
+
+grant execute on function public.kill_admin_otp() to authenticated;
+
+-- Called from SignUpScreen, before the account is even created. Callable
+-- by anon since the person signing up isn't authenticated yet.
+create or replace function public.verify_admin_otp(p_otp text)
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where role = 'admin'
+      and otp = trim(p_otp)
+      and otp_generated_at > now() - interval '5 minutes'
+  );
+$$;
+
+grant execute on function public.verify_admin_otp(text) to anon, authenticated;
+```
+
+**The validity window appears in three places, and must match across all
+three:** `verify_admin_otp` above (server-side, the one that actually
+matters), the pg_cron job below (server-side cleanup), and
+`OTP_VALIDITY_MINUTES` in `src/screens/GenerateOtpScreen.js` (client-side
+countdown display only). Currently **5 minutes** everywhere. To change it
+again, update all three (search for `interval '5 minutes'` in SQL,
+`OTP_VALIDITY_MINUTES` in the app) — if the SQL side changes but the app
+constant doesn't, the on-screen countdown will just be wrong, nothing
+breaks; if the two SQL functions disagree with each other, codes could
+expire inconsistently between signup and cleanup.
+
+### Auto-expiring the code server-side (works even with the app fully closed)
+
+A mobile app can't reliably run a background timer — it might be killed,
+backgrounded, or offline. The only place that can guarantee "this code
+stops working after 5 minutes, no matter what" is Postgres itself, via
+the `pg_cron` extension:
+
+```sql
+create extension if not exists pg_cron;
+
+select cron.schedule(
+  'clear-expired-admin-otp',
+  '* * * * *',  -- every minute
+  $$
+    update public.profiles
+    set otp = null, otp_generated_at = null
+    where role = 'admin'
+      and otp is not null
+      and otp_generated_at < now() - interval '5 minutes';
+  $$
+);
+```
+
+To change the interval on an already-scheduled job, unschedule it first:
+`select cron.unschedule('clear-expired-admin-otp');` then re-run the
+`cron.schedule(...)` call above with the new interval.
+
+If `create extension pg_cron` errors, enable it first via **Supabase
+dashboard → Database → Extensions → search "pg_cron" → Enable**, then
+re-run the `cron.schedule(...)` call. `GenerateOtpScreen`'s own countdown
+is a client-side display only — the code is *actually* dead the moment
+this job (or `verify_admin_otp`'s own freshness check) says so, independent
+of whether anyone has the app open.
+
+### Promoting the first admin
+
+New signups are always `role = 'normal'` — there's no in-app way to create
+the very first admin (correctly so; otherwise anyone could make themselves
+one). Do it by hand once, in SQL Editor:
+
+```sql
+update public.profiles set role = 'admin' where id = '<uuid-from-auth.users>';
+```
+
+After that, admins can promote/demote anyone else from the Users screen.
+
 ## What's implemented
 
-- ✅ Sign up (`SignUpScreen` → `AuthContext.signUp`) — creates the
-  `auth.users` account, then inserts the `public.profiles` row.
+- ✅ Sign up (`SignUpScreen` → `AuthContext.signUp`) — validates the admin
+  code first (`verify_admin_otp`), then creates the `auth.users` account
+  and inserts the `public.profiles` row (always `role: 'normal'`).
 - ✅ Sign in / sign out — `supabase.auth.signInWithPassword` /
   `supabase.auth.signOut`. Session persisted via `AsyncStorage`
   (`src/lib/supabaseClient.js`), restored automatically on app relaunch.
 - ✅ Forgot Password (`ForgotPasswordScreen` → `checkEmailExists` +
   `resetPassword`) — see the security tradeoff above.
-- ⛔ Admin-generated OTP invite codes for signup — `profiles.otp` column
-  exists for this but nothing reads/writes it yet; a later feature.
+- ✅ Admin: Users list + change account type (`UsersListScreen`), visible
+  only when `user.role === 'admin'` on the Me tab.
+- ✅ Admin: Generate/Regenerate/Kill signup code (`GenerateOtpScreen`),
+  same visibility rule, auto-expires via pg_cron.
 - ⛔ Notes / theme preference in Supabase — staying local-only for now
   (free-tier row budget reserved for accounts).

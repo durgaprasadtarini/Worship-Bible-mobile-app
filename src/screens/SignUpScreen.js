@@ -14,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import FormField from '../components/FormField';
-import CaptchaField from '../components/CaptchaField';
 import PrimaryButton from '../components/PrimaryButton';
 import Blobs from '../components/Blobs';
 
@@ -23,13 +22,12 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function SignUpScreen({ navigation }) {
   const { colors } = useTheme();
   const { signUp } = useAuth();
-  const captchaRef = useRef(null);
   const scrollRef = useRef(null);
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [captchaValid, setCaptchaValid] = useState(false);
+  const [adminCode, setAdminCode] = useState('');
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -38,22 +36,23 @@ export default function SignUpScreen({ navigation }) {
     if (!username.trim()) next.username = 'Please enter a username.';
     if (!EMAIL_REGEX.test(email.trim())) next.email = 'Please enter a valid email address.';
     if (password.length < 8) next.password = 'Password must be at least 8 characters.';
-    if (!captchaValid) next.captcha = 'That code doesn’t match — please try again.';
+    if (!adminCode.trim()) next.adminCode = 'Ask an admin for the current signup code.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
   const handleSignUp = async () => {
-    if (!validate()) {
-      if (!captchaValid) captchaRef.current?.refresh();
-      return;
-    }
+    if (!validate()) return;
     setLoading(true);
-    const result = await signUp({ username: username.trim(), email: email.trim(), password });
+    const result = await signUp({
+      username: username.trim(),
+      email: email.trim(),
+      password,
+      adminCode: adminCode.trim(),
+    });
     setLoading(false);
     if (!result.success) {
-      setErrors({ email: result.message });
-      captchaRef.current?.refresh();
+      setErrors({ adminCode: result.message });
       return;
     }
     Alert.alert('Account created', 'Please sign in with your new details.', [
@@ -108,18 +107,22 @@ export default function SignUpScreen({ navigation }) {
               secureTextEntry
               error={errors.password}
             />
-            <CaptchaField
-              ref={captchaRef}
-              onValidityChange={setCaptchaValid}
-              error={errors.captcha}
-              onFocus={() => {
-                // The captcha input + submit button sit near the bottom of
-                // a long form — make sure the keyboard doesn't hide them.
-                setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
-              }}
+            <FormField
+              label="Admin Code"
+              icon="shield-checkmark-outline"
+              value={adminCode}
+              onChangeText={setAdminCode}
+              placeholder="Get this from a church admin"
+              keyboardType="number-pad"
+              error={errors.adminCode}
             />
 
-            <PrimaryButton title="Sign Up" onPress={handleSignUp} loading={loading} style={{ marginTop: 4 }} />
+            <PrimaryButton
+              title="Sign Up"
+              onPress={handleSignUp}
+              loading={loading}
+              style={{ marginTop: 4 }}
+            />
           </View>
 
           <View style={styles.footerRow}>

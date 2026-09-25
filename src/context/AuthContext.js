@@ -67,7 +67,17 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const signUp = async ({ username, email, password }) => {
+  const signUp = async ({ username, email, password, adminCode }) => {
+    // Signup is gated behind a code an admin generates and shares out of
+    // band (see GenerateOtpScreen) — validated server-side via a SECURITY
+    // DEFINER function since the app itself can't read any admin's row.
+    const { data: codeValid, error: codeError } = await supabase.rpc('verify_admin_otp', {
+      p_otp: String(adminCode || '').trim(),
+    });
+    if (codeError || !codeValid) {
+      return { success: false, message: 'That admin code is invalid or has expired. Ask an admin for a new one.' };
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: normalizeEmail(email),
       password,
@@ -138,6 +148,49 @@ export function AuthProvider({ children }) {
     return { success: true };
   };
 
+  // --- Admin-only features (see SUPABASE.md) ---------------------------
+  // Every one of these is backed by a SECURITY DEFINER SQL function that
+  // re-checks the caller is actually an admin itself — the app never
+  // relies on a broad "admins can read/write anything" RLS policy.
+
+  const fetchAllUsers = async () => {
+    const { data, error } = await supabase.rpc('list_all_profiles');
+    if (error) return { success: false, message: error.message, users: [] };
+    return { success: true, users: data || [] };
+  };
+
+  const changeUserRole = async (userId, newRole) => {
+    const { error } = await supabase.rpc('set_user_role', { p_user_id: userId, p_new_role: newRole });
+    if (error) return { success: false, message: error.message };
+    return { success: true };
+  };
+
+  // Reads the signed-in admin's own otp/otp_generated_at — same across all
+  // admins by design, and allowed under the normal "view own profile" RLS
+  // policy, so this is a plain select, not an RPC.
+  const fetchOtpState = async () => {
+    if (!user) return { success: false, message: 'Not signed in.' };
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('otp, otp_generated_at')
+      .eq('id', user.id)
+      .single();
+    if (error) return { success: false, message: error.message };
+    return { success: true, otp: data.otp, generatedAt: data.otp_generated_at };
+  };
+
+  const generateAdminOtp = async () => {
+    const { data, error } = await supabase.rpc('generate_admin_otp');
+    if (error) return { success: false, message: error.message };
+    return { success: true, otp: data };
+  };
+
+  const killAdminOtp = async () => {
+    const { error } = await supabase.rpc('kill_admin_otp');
+    if (error) return { success: false, message: error.message };
+    return { success: true };
+  };
+
   const value = useMemo(
     () => ({
       user,
@@ -148,6 +201,11 @@ export function AuthProvider({ children }) {
       signOut,
       checkEmailExists,
       resetPassword,
+      fetchAllUsers,
+      changeUserRole,
+      fetchOtpState,
+      generateAdminOtp,
+      killAdminOtp,
     }),
     [user, isLoading]
   );

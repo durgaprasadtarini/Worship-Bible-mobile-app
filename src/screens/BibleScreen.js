@@ -4,7 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useReaderPrefs } from '../context/ReaderPrefsContext';
 import BibleBookSelector from '../components/BibleBookSelector';
+import ReaderControls from '../components/ReaderControls';
+import Watermark from '../components/Watermark';
 import { bibleBooks, getBookBySlug, getBookData } from '../data/bible';
 
 const LAST_READ_KEY = '@worship_bible_last_read';
@@ -12,6 +15,7 @@ const DEFAULT_SLUG = 'genesis';
 
 export default function BibleScreen({ navigation }) {
   const { colors } = useTheme();
+  const { fontScale } = useReaderPrefs();
   const [slug, setSlug] = useState(DEFAULT_SLUG);
   const [chapter, setChapter] = useState(1);
   const [selectorVisible, setSelectorVisible] = useState(false);
@@ -81,6 +85,7 @@ export default function BibleScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Watermark />
       <SafeAreaView edges={['top']} style={{ backgroundColor: colors.primary }}>
         <View style={styles.header}>
           <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.headerBtn}>
@@ -92,7 +97,9 @@ export default function BibleScreen({ navigation }) {
             </Text>
             <Ionicons name="chevron-down" size={16} color={colors.textOnPrimary} />
           </Pressable>
-          <View style={styles.headerBtn} />
+          <View style={styles.headerRight}>
+            <ReaderControls />
+          </View>
         </View>
       </SafeAreaView>
 
@@ -103,8 +110,17 @@ export default function BibleScreen({ navigation }) {
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <View style={styles.verseRow}>
-            <Text style={[styles.verseNum, { color: colors.accent }]}>{item.verse}</Text>
-            <Text style={[styles.verseText, { color: colors.textPrimary }]}>{item.text}</Text>
+            <Text style={[styles.verseNum, { color: colors.accent, fontSize: 13 * fontScale }]}>
+              {item.verse}
+            </Text>
+            <Text
+              style={[
+                styles.verseText,
+                { color: colors.textPrimary, fontSize: 16 * fontScale, lineHeight: 26 * fontScale },
+              ]}
+            >
+              {item.text}
+            </Text>
           </View>
         )}
         ListEmptyComponent={
@@ -160,6 +176,9 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerRight: {
+    paddingRight: 4,
   },
   headerTitleBtn: {
     flex: 1,

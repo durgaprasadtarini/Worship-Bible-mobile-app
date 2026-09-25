@@ -4,6 +4,7 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { AuthProvider } from './src/context/AuthContext';
+import { ReaderPrefsProvider } from './src/context/ReaderPrefsContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 function Root() {
@@ -34,7 +35,9 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Root />
+          <ReaderPrefsProvider>
+            <Root />
+          </ReaderPrefsProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

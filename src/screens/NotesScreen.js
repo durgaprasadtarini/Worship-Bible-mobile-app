@@ -18,6 +18,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import ScreenHeader from '../components/ScreenHeader';
 import PrimaryButton from '../components/PrimaryButton';
+import Watermark from '../components/Watermark';
 
 function notesKeyFor(email) {
   return `@worship_notes_${email || 'guest'}`;
@@ -107,7 +108,8 @@ export default function NotesScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScreenHeader title="ప్రకటనలు · Announcements" onBack={() => navigation.goBack()} />
+      <Watermark />
+      <ScreenHeader title="My Notes" onBack={() => navigation.goBack()} />
       <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
         <FlatList
           data={notes}
@@ -117,7 +119,7 @@ export default function NotesScreen({ navigation }) {
             <View style={styles.emptyState}>
               <Ionicons name="document-text-outline" size={40} color={colors.textSecondary} />
               <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                No announcements yet. Tap + to add your first note.
+                No notes yet. Tap + to add your first one.
               </Text>
             </View>
           }

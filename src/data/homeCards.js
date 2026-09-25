@@ -1,12 +1,15 @@
-// Config for the 8-card grid on the Home screen (4 left, 4 right).
+// Config for the 12-card grid on the Home screen (6 left, 6 right).
 //
 // `action` controls what tapping the card does — see HomeStack:
 //   'alphabet'   -> opens the Telugu-alphabet placeholder screen
-//   'bible'      -> opens the (sample-data) Bible reader screen
+//   'bible'      -> opens the real Telugu Bible reader
 //   'comingSoon' -> opens a generic "working on it" screen
-//   'notes'      -> opens the Announcements/Notes screen
+//   'notes'      -> opens the personal Notes screen
 //
-// These are placeholder titles — rename anything below, it's just data.
+// L1-L3 and R1 are the original 4 cards, kept exactly as they were
+// (same id/title/icon/action) — everything else here is new, per the
+// updated card-layout sketch, and opens the "working on it" placeholder
+// until each feature is actually built.
 
 export const leftCards = [
   {
@@ -31,11 +34,25 @@ export const leftCards = [
     action: 'alphabet',
   },
   {
-    id: 'kids-songs',
-    title: 'ప్రత్యేక కీర్తనలు',
-    subtitle: "Kids' Songs",
-    icon: 'happy-outline',
-    action: 'alphabet',
+    id: 'brethren-movement',
+    title: 'బ్రదరన్ మూవ్‌మెంట్',
+    subtitle: 'Brethren Movement',
+    icon: 'people-outline',
+    action: 'comingSoon',
+  },
+  {
+    id: 'live-links',
+    title: 'లైవ్ లింక్స్',
+    subtitle: 'Live Links',
+    icon: 'videocam-outline',
+    action: 'comingSoon',
+  },
+  {
+    id: 'announcements-feed',
+    title: 'ప్రకటనలు',
+    subtitle: 'Announcements',
+    icon: 'megaphone-outline',
+    action: 'comingSoon',
   },
 ];
 
@@ -48,23 +65,37 @@ export const rightCards = [
     action: 'bible',
   },
   {
-    id: 'daily-promise',
-    title: 'Daily Promise',
-    subtitle: 'నేటి వాగ్దానం',
-    icon: 'sparkles-outline',
+    id: 'sunday-school-lessons',
+    title: 'సండే స్కూల్ పాఠములు',
+    subtitle: 'Sunday School Lessons',
+    icon: 'school-outline',
     action: 'comingSoon',
   },
   {
-    id: 'daily-message',
-    title: 'Daily Message',
-    subtitle: 'నేటి సందేశం',
-    icon: 'chatbubble-ellipses-outline',
+    id: 'sermons-notes',
+    title: 'ప్రసంగ నోట్స్',
+    subtitle: 'Sermons & Notes',
+    icon: 'mic-outline',
     action: 'comingSoon',
   },
   {
-    id: 'announcements',
-    title: 'ప్రకటనలు',
-    subtitle: 'Announcements & Notes',
+    id: 'missionary-stories',
+    title: 'మిషనరీ కథలు',
+    subtitle: 'Missionary Stories',
+    icon: 'globe-outline',
+    action: 'comingSoon',
+  },
+  {
+    id: 'music-tracks',
+    title: 'మ్యూజిక్ ట్రాక్స్',
+    subtitle: 'Music Tracks',
+    icon: 'headset-outline',
+    action: 'comingSoon',
+  },
+  {
+    id: 'notes',
+    title: 'నా నోట్స్',
+    subtitle: 'Notes',
     icon: 'document-text-outline',
     action: 'notes',
   },

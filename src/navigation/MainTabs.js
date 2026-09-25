@@ -1,43 +1,17 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
 import HomeStack from './HomeStack';
 import ContactUsScreen from '../screens/ContactUsScreen';
 import MeStack from './MeStack';
-import { useTheme } from '../context/ThemeContext';
+import AppTabBar from '../components/AppTabBar';
 
 const Tab = createBottomTabNavigator();
 
-const ICONS = {
-  Home: 'home',
-  ContactUs: 'call',
-  Me: 'person',
-};
-
-const LABELS = {
-  Home: 'Home',
-  ContactUs: 'Contact Us',
-  Me: 'Me',
-};
-
 export default function MainTabs() {
-  const { colors } = useTheme();
-
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.tabBarInactive,
-        tabBarStyle: {
-          backgroundColor: colors.tabBarBackground,
-          borderTopColor: colors.border,
-        },
-        tabBarLabel: LABELS[route.name],
-        tabBarIcon: ({ color, size, focused }) => (
-          <Ionicons name={`${ICONS[route.name]}${focused ? '' : '-outline'}`} size={size} color={color} />
-        ),
-      })}
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <AppTabBar {...props} />}
     >
       <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="ContactUs" component={ContactUsScreen} />

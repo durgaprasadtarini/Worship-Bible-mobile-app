@@ -3,18 +3,16 @@ import { Pressable, Text, View, StyleSheet, Animated, Easing } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
-import Blobs from './Blobs';
 
-export default function HomeCard({ title, subtitle, icon, onPress, shimmerToken }) {
+export default function HomeCard({ title, subtitle, icon, onPress, shimmerToken, iconBg, iconFg }) {
   const { colors } = useTheme();
   const [cardWidth, setCardWidth] = useState(160);
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
-  // A light sweep across the card — like the translucency drifting through
-  // the reference screenshots' cards — triggered whenever HomeScreen
-  // includes this card in its rotating pick. Keyed off shimmerToken (not a
-  // plain boolean) so the animation replays even if this card is picked
-  // again on the very next cycle.
+  // A light sweep across the card — a small living-app touch — triggered
+  // whenever HomeScreen includes this card in its rotating pick. Keyed off
+  // shimmerToken (not a plain boolean) so the animation replays even if
+  // this card is picked again on the very next cycle.
   useEffect(() => {
     if (shimmerToken != null) {
       shimmerAnim.setValue(0);
@@ -38,29 +36,24 @@ export default function HomeCard({ title, subtitle, icon, onPress, shimmerToken 
       onLayout={(e) => setCardWidth(e.nativeEvent.layout.width)}
       style={({ pressed }) => [
         styles.card,
-        {
-          backgroundColor: colors.surface,
-          shadowColor: colors.cardShadow,
-          borderColor: colors.border,
-        },
-        pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
+        { backgroundColor: colors.surface, shadowColor: colors.cardShadow },
+        pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
       ]}
     >
-      <Blobs colors={[colors.blobA, colors.blobC]} />
       <Animated.View
         pointerEvents="none"
         style={[styles.sweep, { transform: [{ translateX }, { rotate: '15deg' }] }]}
       >
         <LinearGradient
-          colors={['transparent', 'rgba(255,255,255,0.95)', 'rgba(255,255,255,0.95)', 'transparent']}
+          colors={['transparent', 'rgba(184,137,43,0.28)', 'rgba(184,137,43,0.28)', 'transparent']}
           locations={[0, 0.35, 0.65, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
-      <View style={[styles.iconWrap, { backgroundColor: colors.accentSoft }]}>
-        <Ionicons name={icon} size={22} color={colors.accent} />
+      <View style={[styles.iconWrap, { backgroundColor: iconBg || colors.accentSoft }]}>
+        <Ionicons name={icon} size={20} color={iconFg || colors.accent} />
       </View>
       <Text numberOfLines={1} style={[styles.title, { color: colors.textPrimary }]}>
         {title}
@@ -76,15 +69,14 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: 20,
-    borderWidth: 1,
     padding: 16,
     overflow: 'hidden',
-    minHeight: 118,
+    minHeight: 112,
     justifyContent: 'flex-end',
-    elevation: 2,
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+    shadowOpacity: 0.09,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
   },
   sweep: {
     position: 'absolute',
@@ -93,19 +85,19 @@ const styles = StyleSheet.create({
     width: 190,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   title: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 2,
   },
   subtitle: {
-    fontSize: 11.5,
+    fontSize: 11,
   },
 });

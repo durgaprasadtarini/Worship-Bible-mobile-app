@@ -32,8 +32,11 @@ assets/inputs/              # <- drop song .docx files here (see section 6a)
   worship-songs/
   prayer-songs/
   kids-songs/
+bible_notes/Bible-telugu/    # <- source Bible dataset (see section 6b) —
+                             # MIT licensed, keep its LICENSE file
 scripts/
   generate-songs.js         # converts assets/inputs/*.docx -> src/data/songs/*.json
+  generate-bible.js         # converts bible_notes/* -> src/data/bible/*
 src/
   lib/
     supabaseClient.js       # Supabase client (URL/key from .env)
@@ -47,7 +50,8 @@ src/
     songs/                  # generated song data (see section 6a) — don't
                              # hand-edit these .json files, edit the .docx
                              # in assets/inputs/ instead and regenerate
-    sampleBibleTe.js        # sample Telugu Bible verses (placeholder data)
+    bible/                  # generated Bible data (see section 6b) — same
+                             # rule, edit bible_notes/ instead and regenerate
     dailyMessages.js        # the "today's word" pop-up messages
     contactInfo.js          # Contact Us screen content
   components/               # shared UI: buttons, form fields, cards, etc.
@@ -55,11 +59,11 @@ src/
   navigation/                # React Navigation stacks/tabs
 ```
 
-Everything content-related (card titles, contact details, bible verses,
-colors) lives in plain data files under `src/data` and `src/theme` — you
-can edit those directly without touching any screen/logic code. Songs are
-the one exception — edit the `.docx` files in `assets/inputs/`, not the
-generated JSON (see section 6a).
+Everything content-related (card titles, contact details, colors) lives in
+plain data files under `src/data` and `src/theme` — you can edit those
+directly without touching any screen/logic code. Songs and Bible content
+are the exception — edit the source files (`assets/inputs/*.docx` /
+`bible_notes/*`), not the generated JSON (see sections 6a/6b).
 
 ## 2. Prerequisites
 
@@ -220,6 +224,34 @@ downloaded images) and, on its detail screen, one shared **sample** YouTube
 video/link — both clearly placeholders until you're ready to attach real
 per-song artwork/videos.
 
+### 6b. Bible content
+
+The full Telugu Bible (all 66 books) lives under `bible_notes/Bible-telugu/`
+— one `.json` file per book plus `Books.json` (the book index), sourced
+from an MIT-licensed dataset (its `LICENSE` file is part of that folder;
+keep it if you ever redistribute the app's source). To turn that into what
+the app reads:
+
+```bash
+npm run generate:bible
+```
+
+(also runs automatically after `npm install`, same as songs). This writes
+`src/data/bible/books.json` (book list with Telugu/English names, chapter
+counts, Old/New Testament grouping) and one file per book under
+`src/data/bible/books/`. You'd only re-run this if you replace or edit the
+source dataset — the content isn't expected to change often.
+
+**On app size**: this dataset is ~11MB of text, which does end up inside
+the compiled JavaScript bundle (Metro has to include every file a `require()`
+could resolve to, whether or not it's actually loaded at any given moment).
+That's a normal size for a modern app and won't cause problems in an EAS
+build — for scale, most Play Store apps are 50–150MB+. What actually
+matters more than bundle size is *when* that 11MB gets parsed into memory:
+`src/data/bible/index.js` only `require()`s a book's JSON the first time
+`BibleScreen` actually opens that book, not all 66 upfront — so cold app
+start stays fast regardless of the dataset's total size.
+
 ## 7. Known limitations (basic version)
 
 - Accounts run on Supabase (see above / `SUPABASE.md`); notes and theme
@@ -236,7 +268,9 @@ per-song artwork/videos.
   right now (10, from the sample `.docx`); the other 3 left cards show "no
   songs yet" until `.docx` files are added to their folders (see 6a).
 - The "Daily Promise" / "Daily Message" right-hand cards show a "working
-  on it" placeholder. Bible has minimal sample data. Song videos all point
-  to one shared sample link, and cover art is generic (cycled, not
-  downloaded photos) — all intentional for this first pass, replace
-  incrementally.
+  on it" placeholder. Song videos all point to one shared sample link, and
+  cover art is generic (cycled, not downloaded photos) — all intentional
+  for this first pass, replace incrementally.
+- Bible is the full 66-book Telugu text (see 6b) — Telugu only, no English
+  toggle (no English text is bundled), and no full-text verse search yet
+  (only browse by book/chapter).

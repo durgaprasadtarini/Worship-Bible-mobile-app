@@ -1,0 +1,464 @@
+[
+  {
+    "slug": "genesis",
+    "english": "Genesis",
+    "telugu": "ఆదికాండము",
+    "chapterCount": 50,
+    "testament": "old"
+  },
+  {
+    "slug": "exodus",
+    "english": "Exodus",
+    "telugu": "నిర్గమకాండము",
+    "chapterCount": 40,
+    "testament": "old"
+  },
+  {
+    "slug": "leviticus",
+    "english": "Leviticus",
+    "telugu": "లేవీయకాండము",
+    "chapterCount": 27,
+    "testament": "old"
+  },
+  {
+    "slug": "numbers",
+    "english": "Numbers",
+    "telugu": "సంఖ్యాకాండము",
+    "chapterCount": 36,
+    "testament": "old"
+  },
+  {
+    "slug": "deuteronomy",
+    "english": "Deuteronomy",
+    "telugu": "ద్వితీయోపదేశకాండమ",
+    "chapterCount": 34,
+    "testament": "old"
+  },
+  {
+    "slug": "joshua",
+    "english": "Joshua",
+    "telugu": "యెహొషువ",
+    "chapterCount": 24,
+    "testament": "old"
+  },
+  {
+    "slug": "judges",
+    "english": "Judges",
+    "telugu": "న్యాయాధిపతులు",
+    "chapterCount": 21,
+    "testament": "old"
+  },
+  {
+    "slug": "ruth",
+    "english": "Ruth",
+    "telugu": "రూతు",
+    "chapterCount": 4,
+    "testament": "old"
+  },
+  {
+    "slug": "1-samuel",
+    "english": "1 Samuel",
+    "telugu": "సమూయేలు మొదటి గ్రంథము",
+    "chapterCount": 31,
+    "testament": "old"
+  },
+  {
+    "slug": "2-samuel",
+    "english": "2 Samuel",
+    "telugu": "సమూయేలు రెండవ గ్రంథము",
+    "chapterCount": 24,
+    "testament": "old"
+  },
+  {
+    "slug": "1-kings",
+    "english": "1 Kings",
+    "telugu": "రాజులు మొదటి గ్రంథము",
+    "chapterCount": 22,
+    "testament": "old"
+  },
+  {
+    "slug": "2-kings",
+    "english": "2 Kings",
+    "telugu": "రాజులు రెండవ గ్రంథము",
+    "chapterCount": 25,
+    "testament": "old"
+  },
+  {
+    "slug": "1-chronicles",
+    "english": "1 Chronicles",
+    "telugu": "దినవృత్తాంతములు మొదటి గ్రంథము",
+    "chapterCount": 29,
+    "testament": "old"
+  },
+  {
+    "slug": "2-chronicles",
+    "english": "2 Chronicles",
+    "telugu": "దినవృత్తాంతములు రెండవ గ్రంథము",
+    "chapterCount": 36,
+    "testament": "old"
+  },
+  {
+    "slug": "ezra",
+    "english": "Ezra",
+    "telugu": "ఎజ్రా",
+    "chapterCount": 10,
+    "testament": "old"
+  },
+  {
+    "slug": "nehemiah",
+    "english": "Nehemiah",
+    "telugu": "నెహెమ్యా",
+    "chapterCount": 13,
+    "testament": "old"
+  },
+  {
+    "slug": "esther",
+    "english": "Esther",
+    "telugu": "ఎస్తేరు",
+    "chapterCount": 10,
+    "testament": "old"
+  },
+  {
+    "slug": "job",
+    "english": "Job",
+    "telugu": "యోబు గ్రంథము",
+    "chapterCount": 42,
+    "testament": "old"
+  },
+  {
+    "slug": "psalms",
+    "english": "Psalms",
+    "telugu": "కీర్తనల గ్రంథము",
+    "chapterCount": 150,
+    "testament": "old"
+  },
+  {
+    "slug": "proverbs",
+    "english": "Proverbs",
+    "telugu": "సామెతలు",
+    "chapterCount": 31,
+    "testament": "old"
+  },
+  {
+    "slug": "ecclesiastes",
+    "english": "Ecclesiastes",
+    "telugu": "ప్రసంగి",
+    "chapterCount": 12,
+    "testament": "old"
+  },
+  {
+    "slug": "song-of-songs",
+    "english": "Song of Songs",
+    "telugu": "పరమగీతము",
+    "chapterCount": 8,
+    "testament": "old"
+  },
+  {
+    "slug": "isaiah",
+    "english": "Isaiah",
+    "telugu": "యెషయా గ్రంథము",
+    "chapterCount": 66,
+    "testament": "old"
+  },
+  {
+    "slug": "jeremiah",
+    "english": "Jeremiah",
+    "telugu": "యిర్మీయా",
+    "chapterCount": 52,
+    "testament": "old"
+  },
+  {
+    "slug": "lamentations",
+    "english": "Lamentations",
+    "telugu": "విలాపవాక్యములు",
+    "chapterCount": 5,
+    "testament": "old"
+  },
+  {
+    "slug": "ezekiel",
+    "english": "Ezekiel",
+    "telugu": "యెహెజ్కేలు",
+    "chapterCount": 48,
+    "testament": "old"
+  },
+  {
+    "slug": "daniel",
+    "english": "Daniel",
+    "telugu": "దానియేలు",
+    "chapterCount": 12,
+    "testament": "old"
+  },
+  {
+    "slug": "hosea",
+    "english": "Hosea",
+    "telugu": "హొషేయ",
+    "chapterCount": 14,
+    "testament": "old"
+  },
+  {
+    "slug": "joel",
+    "english": "Joel",
+    "telugu": "యోవేలు",
+    "chapterCount": 3,
+    "testament": "old"
+  },
+  {
+    "slug": "amos",
+    "english": "Amos",
+    "telugu": "ఆమోసు",
+    "chapterCount": 9,
+    "testament": "old"
+  },
+  {
+    "slug": "obadiah",
+    "english": "Obadiah",
+    "telugu": "ఓబద్యా",
+    "chapterCount": 1,
+    "testament": "old"
+  },
+  {
+    "slug": "jonah",
+    "english": "Jonah",
+    "telugu": "యోనా",
+    "chapterCount": 4,
+    "testament": "old"
+  },
+  {
+    "slug": "micah",
+    "english": "Micah",
+    "telugu": "మీకా",
+    "chapterCount": 7,
+    "testament": "old"
+  },
+  {
+    "slug": "nahum",
+    "english": "Nahum",
+    "telugu": "నహూము",
+    "chapterCount": 3,
+    "testament": "old"
+  },
+  {
+    "slug": "habakkuk",
+    "english": "Habakkuk",
+    "telugu": "హబక్కూకు",
+    "chapterCount": 3,
+    "testament": "old"
+  },
+  {
+    "slug": "zephaniah",
+    "english": "Zephaniah",
+    "telugu": "జెఫన్యా",
+    "chapterCount": 3,
+    "testament": "old"
+  },
+  {
+    "slug": "haggai",
+    "english": "Haggai",
+    "telugu": "హగ్గయి",
+    "chapterCount": 2,
+    "testament": "old"
+  },
+  {
+    "slug": "zechariah",
+    "english": "Zechariah",
+    "telugu": "జెకర్యా",
+    "chapterCount": 14,
+    "testament": "old"
+  },
+  {
+    "slug": "malachi",
+    "english": "Malachi",
+    "telugu": "మలాకీ",
+    "chapterCount": 4,
+    "testament": "old"
+  },
+  {
+    "slug": "matthew",
+    "english": "Matthew",
+    "telugu": "మత్తయి సువార్త",
+    "chapterCount": 28,
+    "testament": "new"
+  },
+  {
+    "slug": "mark",
+    "english": "Mark",
+    "telugu": "మార్కు సువార్త",
+    "chapterCount": 16,
+    "testament": "new"
+  },
+  {
+    "slug": "luke",
+    "english": "Luke",
+    "telugu": "లూకా సువార్త",
+    "chapterCount": 24,
+    "testament": "new"
+  },
+  {
+    "slug": "john",
+    "english": "John",
+    "telugu": "యోహాను సువార్త",
+    "chapterCount": 21,
+    "testament": "new"
+  },
+  {
+    "slug": "acts",
+    "english": "Acts",
+    "telugu": "అపొస్తలుల కార్యములు",
+    "chapterCount": 28,
+    "testament": "new"
+  },
+  {
+    "slug": "romans",
+    "english": "Romans",
+    "telugu": "రోమీయులకు",
+    "chapterCount": 16,
+    "testament": "new"
+  },
+  {
+    "slug": "1-corinthians",
+    "english": "1 Corinthians",
+    "telugu": "1 కొరింథీయులకు",
+    "chapterCount": 16,
+    "testament": "new"
+  },
+  {
+    "slug": "2-corinthians",
+    "english": "2 Corinthians",
+    "telugu": "2 కొరింథీయులకు",
+    "chapterCount": 13,
+    "testament": "new"
+  },
+  {
+    "slug": "galatians",
+    "english": "Galatians",
+    "telugu": "గలతీయులకు",
+    "chapterCount": 6,
+    "testament": "new"
+  },
+  {
+    "slug": "ephesians",
+    "english": "Ephesians",
+    "telugu": "ఎఫెసీయులకు",
+    "chapterCount": 6,
+    "testament": "new"
+  },
+  {
+    "slug": "philippians",
+    "english": "Philippians",
+    "telugu": "ఫిలిప్పీయులకు",
+    "chapterCount": 4,
+    "testament": "new"
+  },
+  {
+    "slug": "colossians",
+    "english": "Colossians",
+    "telugu": "కొలొస్సయులకు",
+    "chapterCount": 4,
+    "testament": "new"
+  },
+  {
+    "slug": "1-thessalonians",
+    "english": "1 Thessalonians",
+    "telugu": "1 థెస్సలొనీకయులకు",
+    "chapterCount": 5,
+    "testament": "new"
+  },
+  {
+    "slug": "2-thessalonians",
+    "english": "2 Thessalonians",
+    "telugu": "2 థెస్సలొనీకయులకు",
+    "chapterCount": 3,
+    "testament": "new"
+  },
+  {
+    "slug": "1-timothy",
+    "english": "1 Timothy",
+    "telugu": "1 తిమోతికి",
+    "chapterCount": 6,
+    "testament": "new"
+  },
+  {
+    "slug": "2-timothy",
+    "english": "2 Timothy",
+    "telugu": "2 తిమోతికి",
+    "chapterCount": 4,
+    "testament": "new"
+  },
+  {
+    "slug": "titus",
+    "english": "Titus",
+    "telugu": "తీతుకు",
+    "chapterCount": 3,
+    "testament": "new"
+  },
+  {
+    "slug": "philemon",
+    "english": "Philemon",
+    "telugu": "ఫిలేమోనుకు",
+    "chapterCount": 1,
+    "testament": "new"
+  },
+  {
+    "slug": "hebrews",
+    "english": "Hebrews",
+    "telugu": "హెబ్రీయులకు",
+    "chapterCount": 13,
+    "testament": "new"
+  },
+  {
+    "slug": "james",
+    "english": "James",
+    "telugu": "యాకోబు",
+    "chapterCount": 5,
+    "testament": "new"
+  },
+  {
+    "slug": "1-peter",
+    "english": "1 Peter",
+    "telugu": "1 పేతురు",
+    "chapterCount": 5,
+    "testament": "new"
+  },
+  {
+    "slug": "2-peter",
+    "english": "2 Peter",
+    "telugu": "2 పేతురు",
+    "chapterCount": 3,
+    "testament": "new"
+  },
+  {
+    "slug": "1-john",
+    "english": "1 John",
+    "telugu": "1 యోహాను",
+    "chapterCount": 5,
+    "testament": "new"
+  },
+  {
+    "slug": "2-john",
+    "english": "2 John",
+    "telugu": "2 యోహాను",
+    "chapterCount": 1,
+    "testament": "new"
+  },
+  {
+    "slug": "3-john",
+    "english": "3 John",
+    "telugu": "3 యోహాను",
+    "chapterCount": 1,
+    "testament": "new"
+  },
+  {
+    "slug": "jude",
+    "english": "Jude",
+    "telugu": "యూదా",
+    "chapterCount": 1,
+    "testament": "new"
+  },
+  {
+    "slug": "revelation",
+    "english": "Revelation",
+    "telugu": "ప్రకటన గ్రంథము",
+    "chapterCount": 22,
+    "testament": "new"
+  }
+]

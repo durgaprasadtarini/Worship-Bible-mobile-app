@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import HomeCard from '../components/HomeCard';
-import Blobs from '../components/Blobs';
+import WaveDecoration from '../components/WaveDecoration';
 import DailyMessageOverlay from '../components/DailyMessageOverlay';
 import { leftCards, rightCards } from '../data/homeCards';
+import { paletteAt } from '../data/cardPalette';
 import { dailyMessages } from '../data/dailyMessages';
 import { shouldShowDailyMessage } from '../utils/appSession';
 
@@ -98,22 +100,43 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]} edges={['top']}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.surface }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={[styles.hero, { backgroundColor: colors.primary }]}>
-          <Blobs colors={[colors.blobA, colors.blobB, colors.blobC]} />
-          <View style={styles.heroTopRow}>
-            <View style={[styles.badge, { backgroundColor: colors.surface }]}>
-              <Ionicons name="book" size={20} color={colors.primary} />
+        <View style={styles.topRow}>
+          <View style={styles.identity}>
+            <View style={[styles.avatar, { backgroundColor: colors.accentSoft }]}>
+              <Ionicons name="book" size={20} color={colors.accent} />
+            </View>
+            <View>
+              <Text style={[styles.welcomeSmall, { color: colors.textSecondary }]}>Welcome back!</Text>
+              <Text style={[styles.welcomeName, { color: colors.textPrimary }]} numberOfLines={1}>
+                {user?.username || 'Guest'}
+              </Text>
             </View>
           </View>
-          <Text style={[styles.greeting, { color: colors.textOnPrimary }]}>
-            {greeting}{user?.username ? `, ${user.username}` : ''}
-          </Text>
-          <View style={[styles.dateChip, { backgroundColor: 'rgba(255,255,255,0.14)' }]}>
-            <Text style={[styles.dateText, { color: colors.textOnPrimary }]}>{dateLabel}</Text>
-          </View>
+          <Pressable
+            onPress={() => navigation.navigate('Notes')}
+            style={[styles.bellBtn, { backgroundColor: colors.surfaceAlt }]}
+          >
+            <Ionicons name="notifications-outline" size={18} color={colors.textPrimary} />
+          </Pressable>
         </View>
+
+        <LinearGradient
+          colors={[colors.accent, colors.primaryLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <WaveDecoration />
+          <Text style={styles.heroEyebrow}>{greeting.toUpperCase()}</Text>
+          <Text style={styles.heroDate}>{dateLabel}</Text>
+          <Pressable style={styles.heroCta} onPress={() => navigation.navigate('Bible')}>
+            <Ionicons name="book-outline" size={14} color="#FFFFFF" />
+            <Text style={styles.heroCtaText}>నేటి వాక్యం చదవండి</Text>
+            <Ionicons name="chevron-forward" size={14} color="#FFFFFF" />
+          </Pressable>
+        </LinearGradient>
 
         <View style={styles.gridSection}>
           <View style={styles.sectionTitleRow}>
@@ -123,28 +146,38 @@ export default function HomeScreen({ navigation }) {
 
           <View style={styles.grid}>
             <View style={styles.column}>
-              {leftCards.map((card) => (
-                <HomeCard
-                  key={card.id}
-                  title={card.title}
-                  subtitle={card.subtitle}
-                  icon={card.icon}
-                  onPress={() => openCard(card)}
-                  shimmerToken={shimmerIds.includes(card.id) ? shimmerTick : null}
-                />
-              ))}
+              {leftCards.map((card, i) => {
+                const p = paletteAt(i);
+                return (
+                  <HomeCard
+                    key={card.id}
+                    title={card.title}
+                    subtitle={card.subtitle}
+                    icon={card.icon}
+                    iconBg={p.bg}
+                    iconFg={p.fg}
+                    onPress={() => openCard(card)}
+                    shimmerToken={shimmerIds.includes(card.id) ? shimmerTick : null}
+                  />
+                );
+              })}
             </View>
             <View style={styles.column}>
-              {rightCards.map((card) => (
-                <HomeCard
-                  key={card.id}
-                  title={card.title}
-                  subtitle={card.subtitle}
-                  icon={card.icon}
-                  onPress={() => openCard(card)}
-                  shimmerToken={shimmerIds.includes(card.id) ? shimmerTick : null}
-                />
-              ))}
+              {rightCards.map((card, i) => {
+                const p = paletteAt(i + leftCards.length);
+                return (
+                  <HomeCard
+                    key={card.id}
+                    title={card.title}
+                    subtitle={card.subtitle}
+                    icon={card.icon}
+                    iconBg={p.bg}
+                    iconFg={p.fg}
+                    onPress={() => openCard(card)}
+                    shimmerToken={shimmerIds.includes(card.id) ? shimmerTick : null}
+                  />
+                );
+              })}
             </View>
           </View>
         </View>
@@ -162,40 +195,79 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scrollContent: { paddingBottom: 40 },
-  hero: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 36,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    overflow: 'hidden',
-  },
-  heroTopRow: {
+  topRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 18,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
-  badge: {
-    width: 44,
-    height: 44,
+  identity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flexShrink: 1,
+  },
+  avatar: {
+    width: 42,
+    height: 42,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  greeting: {
-    fontSize: 26,
-    fontWeight: '800',
-    marginBottom: 14,
+  welcomeSmall: {
+    fontSize: 12,
+    marginBottom: 1,
   },
-  dateChip: {
+  welcomeName: {
+    fontSize: 16.5,
+    fontWeight: '800',
+    maxWidth: 190,
+  },
+  bellBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hero: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 26,
+    paddingHorizontal: 22,
+    paddingTop: 22,
+    paddingBottom: 78,
+    overflow: 'hidden',
+  },
+  heroEyebrow: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 11.5,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  heroDate: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: 18,
+  },
+  heroCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
+    gap: 7,
+    backgroundColor: 'rgba(0,0,0,0.18)',
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 9,
     borderRadius: 999,
   },
-  dateText: {
-    fontSize: 13,
-    fontWeight: '600',
+  heroCtaText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '700',
   },
   gridSection: {
     paddingHorizontal: 20,

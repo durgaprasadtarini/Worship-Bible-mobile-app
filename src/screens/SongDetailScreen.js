@@ -4,7 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
+import { useReaderPrefs } from '../context/ReaderPrefsContext';
 import ScreenHeader from '../components/ScreenHeader';
+import ReaderControls from '../components/ReaderControls';
+import Watermark from '../components/Watermark';
 
 // We don't have a real recording per song yet, so every song links out to
 // the same sample Telugu worship video for now — clearly a placeholder,
@@ -15,6 +18,7 @@ const SAMPLE_THUMBNAIL = `https://img.youtube.com/vi/${SAMPLE_YOUTUBE_ID}/hqdefa
 
 export default function SongDetailScreen({ navigation, route }) {
   const { colors } = useTheme();
+  const { fontScale } = useReaderPrefs();
   const { song, categoryTitle } = route.params ?? {};
 
   const onShare = () => {
@@ -27,7 +31,7 @@ export default function SongDetailScreen({ navigation, route }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScreenHeader title={categoryTitle} onBack={() => navigation.goBack()} />
+      <ScreenHeader title={categoryTitle} onBack={() => navigation.goBack()} right={<ReaderControls />} />
       <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
           <Pressable onPress={onWatch}>
@@ -76,7 +80,15 @@ export default function SongDetailScreen({ navigation, route }) {
           </View>
 
           <View style={[styles.lyricsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[styles.lyricsText, { color: colors.textPrimary }]}>{song.lyrics}</Text>
+            <Watermark width="85%" />
+            <Text
+              style={[
+                styles.lyricsText,
+                { color: colors.textPrimary, fontSize: 16 * fontScale, lineHeight: 28 * fontScale },
+              ]}
+            >
+              {song.lyrics}
+            </Text>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -176,6 +188,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     padding: 18,
+    overflow: 'hidden',
   },
   lyricsText: {
     fontSize: 16,

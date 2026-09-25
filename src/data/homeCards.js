@@ -11,14 +11,14 @@
 export const leftCards = [
   {
     id: 'telugu-hymns',
-    title: 'తెలుగు క్రిస్తవ కీర్తనలు.',
+    title: 'తెలుగు క్రైస్తవ కీర్తనలు.',
     subtitle: 'Telugu Hymns',
     icon: 'musical-notes-outline',
     action: 'alphabet',
   },
   {
     id: 'worship-songs',
-    title: 'క్రీస్తవ సునాద కీర్తనలు',
+    title: 'క్రైస్తవ సునాద కీర్తనలు',
     subtitle: 'Worship Songs',
     icon: 'flame-outline',
     action: 'alphabet',

@@ -27,7 +27,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "generate:songs": "node scripts/generate-songs.js",
-    "postinstall": "node scripts/generate-songs.js"
+    "generate:bible": "node scripts/generate-bible.js",
+    "postinstall": "node scripts/generate-songs.js && node scripts/generate-bible.js"
   },
   "private": true,
   "devDependencies": {
